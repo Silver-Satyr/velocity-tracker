@@ -1,0 +1,54 @@
+name: Velocity Flight Tracker v3
+
+on:
+  schedule:
+    # 7:00 AM AEST = 21:00 UTC previous day
+    # (Sydney is UTC+10 in September — no daylight saving)
+    - cron: "0 21 * * *"
+
+  # Manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  check-flights:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Required so the script can write state.json back to the repo
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run flight tracker
+        env:
+          # ── seats.aero ──────────────────────────────────────────────────────
+          SEATS_API_KEY:           ${{ secrets.SEATS_API_KEY }}
+
+          # ── Amadeus (cash fares + price analysis) ───────────────────────────
+          AMADEUS_CLIENT_ID:       ${{ secrets.AMADEUS_CLIENT_ID }}
+          AMADEUS_CLIENT_SECRET:   ${{ secrets.AMADEUS_CLIENT_SECRET }}
+
+          # ── Notification: "slack" or "whatsapp" ─────────────────────────────
+          NOTIFY_VIA:              ${{ secrets.NOTIFY_VIA }}
+          SLACK_WEBHOOK_URL:       ${{ secrets.SLACK_WEBHOOK_URL }}
+          TWILIO_ACCOUNT_SID:      ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN:       ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_FROM_WHATSAPP:    ${{ secrets.TWILIO_FROM_WHATSAPP }}
+          TWILIO_TO_WHATSAPP:      ${{ secrets.TWILIO_TO_WHATSAPP }}
+
+          # ── Auto-provided by GitHub Actions (do not add as a secret) ────────
+          GITHUB_TOKEN:            ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY:       ${{ github.repository }}
+
+        run: python check_flights.py
