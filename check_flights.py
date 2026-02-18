@@ -593,16 +593,17 @@ def section_header(title: str) -> str:
 def format_cash_offer(o: dict) -> str:
     deal = "  🔥 GREAT DEAL" if (o["cabin"] == "business" and o["price_pp"] < DEAL_CASH_BIZ_PP) else ""
     star = "⭐ " if o["is_qatar"] else "   "
+    cash_val = f"AUD ${o['price_total']:,.0f}  (~${o['price_pp']:,.0f} pp)"
     return (
         f"{star}{o['carrier_label']}\n"
         + f"```"
         + f"\n{row('Flights', o['flight_nums'])}"
-        + f"\n{row('Via / Stops', f\"{o['via']} · 1 stop\")}"
+        + f"\n{row('Via / Stops', o['via'] + ' · 1 stop')}"
         + f"\n{row('Departs', fmt_datetime(o['dep']))}"
         + f"\n{row('Arrives', fmt_datetime(o['arr']))}"
         + f"\n{row('Layover', fmt_duration(o['layover_min']))}"
         + f"\n{row('Total time', fmt_duration(o['total_min']))}"
-        + f"\n{row('Cash (2 pax)', f\"AUD ${o['price_total']:,.0f}  (~${o['price_pp']:,.0f} pp)\")}{deal}"
+        + f"\n{row('Cash (2 pax)', cash_val)}{deal}"
         + f"```"
     )
 
@@ -612,15 +613,19 @@ def format_points_offer(o: dict, show_deal: bool = True) -> str:
             if show_deal and o["cabin"] == "business" and o["points_pp"] < DEAL_POINTS_BIZ_PP
             else "")
     star = "⭐ " if o["is_qatar"] else "   "
+    pts_pp_val = f"{o['points_pp']:,}  ({o['total_points']:,} total)"
+    pts_tax_val = f"{o['total_points']:,} pts + AUD ${o['taxes_total']:,.0f}"
+    buy_pts_val = f"AUD ${o['booster_aud']:,.0f}  ({o['pts_bought']:,} pts)"
+    allin_val = f"AUD ${o['booster_total']:,.0f}"
     return (
         f"{star}{o['carrier_label']}\n"
         + f"```"
         + f"\n{row('Flights', o['flights'])}"
         + f"\n{row('Seats avail', str(o['seats_avail']))}"
-        + f"\n{row('Points (pp)', f\"{o['points_pp']:,}  ({o['total_points']:,} total)\")}{deal}"
-        + f"\n{row('Points + taxes', f\"{o['total_points']:,} pts + AUD ${o['taxes_total']:,.0f}\")}"
-        + f"\n{row('Buy pts cost', f\"AUD ${o['booster_aud']:,.0f}  ({o['pts_bought']:,} pts)\")}"
-        + f"\n{row('All-in (buy pts)', f\"AUD ${o['booster_total']:,.0f}\")}"
+        + f"\n{row('Points (pp)', pts_pp_val)}{deal}"
+        + f"\n{row('Points + taxes', pts_tax_val)}"
+        + f"\n{row('Buy pts cost', buy_pts_val)}"
+        + f"\n{row('All-in (buy pts)', allin_val)}"
         + f"```"
     )
 
